@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vakwerk — Werkende AI-infrastructuur voor de bouw</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Spline+Sans+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16140f;
+  --paper:#f4efe4;
+  --paper-2:#ebe3d2;
+  --rust:#c4502a;
+  --rust-deep:#9c3c1f;
+  --moss:#3f4a32;
+  --gold:#d9a441;
+  --line:#16140f;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Archivo',sans-serif;
+  font-size:17px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--rust);color:var(--paper)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+.mono{font-family:'Spline Sans Mono',monospace;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase}
+
+/* grain + texture */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:999;
+  opacity:.035;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:50;
+  background:var(--paper);
+  border-bottom:2px solid var(--line);
+}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:74px}
+.brand{font-family:'Fraunces',serif;font-weight:600;font-size:1.45rem;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.brand .dot{width:13px;height:13px;background:var(--rust);border-radius:50%;display:inline-block}
+.navlinks{display:flex;gap:34px;align-items:center}
+.navlinks a{color:var(--ink);text-decoration:none;font-size:.86rem;font-weight:500}
+.navlinks a:hover{color:var(--rust)}
+.navcta{
+  border:2px solid var(--line);background:var(--ink);color:var(--paper)!important;
+  padding:10px 20px;border-radius:30px;font-size:.8rem!important;
+}
+.navcta:hover{background:var(--rust);border-color:var(--rust)}
+@media(max-width:760px){.navlinks a:not(.navcta){display:none}}
+
+/* HERO */
+header{position:relative;padding:90px 0 70px;border-bottom:2px solid var(--line);overflow:hidden}
+header::after{
+  content:"";position:absolute;right:-160px;top:-160px;width:560px;height:560px;
+  background:radial-gradient(circle,var(--gold) 0%,transparent 62%);opacity:.32;
+}
+.tagline{display:inline-flex;align-items:center;gap:10px;color:var(--rust-deep);margin-bottom:30px}
+.tagline::before{content:"";width:34px;height:2px;background:var(--rust)}
+h1{
+  font-family:'Fraunces',serif;font-weight:600;
+  font-size:clamp(2.9rem,7vw,5.6rem);line-height:1.02;letter-spacing:-.03em;
+  max-width:15ch;
+}
+h1 em{font-style:italic;color:var(--rust)}
+.lead{
+  margin-top:30px;max-width:48ch;font-size:1.2rem;color:#3a3528;
+}
+.herobtns{margin-top:42px;display:flex;gap:16px;flex-wrap:wrap}
+.btn{
+  display:inline-block;text-decoration:none;font-weight:600;font-size:.92rem;
+  padding:16px 30px;border-radius:34px;border:2px solid var(--line);
+  transition:transform .15s ease;
+}
+.btn:hover{transform:translateY(-3px)}
+.btn-primary{background:var(--rust);color:var(--paper)}
+.btn-ghost{background:transparent;color:var(--ink)}
+.herostats{
+  margin-top:64px;display:grid;grid-template-columns:repeat(3,1fr);
+  border:2px solid var(--line);background:var(--paper-2);
+}
+.herostats div{padding:26px 28px;border-right:2px solid var(--line)}
+.herostats div:last-child{border-right:none}
+.herostats .num{font-family:'Fraunces',serif;font-size:2.5rem;font-weight:600;line-height:1}
+.herostats .lbl{margin-top:8px;font-size:.82rem;color:#5a5343}
+@media(max-width:680px){.herostats{grid-template-columns:1fr}.herostats div{border-right:none;border-bottom:2px solid var(--line)}.herostats div:last-child{border-bottom:none}}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* SECTION SHELL */
+section{padding:96px 0;border-bottom:2px solid var(--line)}
+.kicker{color:var(--rust-deep);margin-bottom:18px}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(2rem,4vw,3rem);letter-spacing:-.02em;line-height:1.08;max-width:18ch}
+.sub{margin-top:18px;max-width:54ch;color:#4a4435}
+
+/* PROBLEM */
+.probs{margin-top:54px;display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:2px solid var(--line)}
+.prob{padding:38px 32px;border-right:2px solid var(--line);background:var(--paper)}
+.prob:last-child{border-right:none}
+.prob .pn{font-family:'Spline Sans Mono',monospace;color:var(--rust);font-size:.95rem;margin-bottom:18px}
+.prob h3{font-family:'Fraunces',serif;font-weight:600;font-size:1.35rem;margin-bottom:12px}
+.prob p{font-size:.96rem;color:#4a4435}
+@media(max-width:760px){.probs{grid-template-columns:1fr}.prob{border-right:none;border-bottom:2px solid var(--line)}.prob:last-child{border-bottom:none}}
+
+/* PRODUCTS */
+#producten{background:var(--moss);color:var(--paper);border-bottom:2px solid var(--line)}
+#producten .kicker{color:var(--gold)}
+#producten h2,#producten .sub{color:var(--paper)}
+#producten .sub{color:#cdd1c2}
+.cards{margin-top:56px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{
+  background:var(--paper);color:var(--ink);border:2px solid var(--ink);
+  border-radius:6px;padding:32px 28px;display:flex;flex-direction:column;
+  position:relative;transition:transform .18s ease;
+}
+.card:hover{transform:translateY(-7px)}
+.card.feat{background:var(--ink);color:var(--paper)}
+.card .tag{
+  position:absolute;top:-13px;left:24px;background:var(--gold);color:var(--ink);
+  font-family:'Spline Sans Mono',monospace;font-size:.66rem;letter-spacing:.14em;
+  text-transform:uppercase;padding:5px 12px;border:2px solid var(--ink);border-radius:20px;
+}
+.card h3{font-family:'Fraunces',serif;font-weight:600;font-size:1.5rem;margin-bottom:6px}
+.card .desc{font-size:.93rem;color:inherit;opacity:.82;margin-bottom:22px;flex:1}
+.card ul{list-style:none;margin-bottom:24px}
+.card li{font-size:.9rem;padding:7px 0;border-bottom:1px dashed rgba(120,110,90,.4);display:flex;gap:9px}
+.card.feat li{border-color:rgba(244,239,228,.2)}
+.card li::before{content:"→";color:var(--rust);font-weight:700}
+.card .price{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:600;margin-top:auto}
+.card .price span{display:block;font-family:'Archivo';font-size:.78rem;font-weight:400;opacity:.7;margin-top:3px}
+@media(max-width:860px){.cards{grid-template-columns:1fr}}
+
+/* METHOD */
+.steps{margin-top:56px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:2px solid var(--line)}
+.step{padding:32px 26px;border-right:2px solid var(--line);position:relative}
+.step:last-child{border-right:none}
+.step .sn{
+  font-family:'Fraunces',serif;font-size:3.4rem;font-weight:600;
+  color:var(--paper-2);line-height:.8;-webkit-text-stroke:1.5px var(--ink);
+}
+.step h3{font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;margin:16px 0 8px}
+.step p{font-size:.88rem;color:#4a4435}
+@media(max-width:860px){.steps{grid-template-columns:1fr 1fr}.step:nth-child(2){border-right:none}.step:nth-child(1),.step:nth-child(2){border-bottom:2px solid var(--line)}}
+@media(max-width:480px){.steps{grid-template-columns:1fr}.step{border-right:none!important;border-bottom:2px solid var(--line)}.step:last-child{border-bottom:none}}
+
+/* FOUNDERS */
+#team{background:var(--paper-2)}
+.founders{margin-top:54px;display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.founder{background:var(--paper);border:2px solid var(--line);border-radius:6px;padding:34px 32px}
+.founder .av{
+  width:64px;height:64px;border-radius:50%;border:2px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fraunces',serif;font-weight:600;font-size:1.6rem;margin-bottom:20px;
+}
+.founder:nth-child(1) .av{background:var(--rust);color:var(--paper)}
+.founder:nth-child(2) .av{background:var(--moss);color:var(--paper)}
+.founder h3{font-family:'Fraunces',serif;font-weight:600;font-size:1.5rem}
+.founder .role{color:var(--rust-deep);font-size:.85rem;font-weight:600;margin-bottom:14px}
+.founder p{font-size:.94rem;color:#4a4435}
+@media(max-width:760px){.founders{grid-template-columns:1fr}}
+
+/* CTA */
+#contact{background:var(--ink);color:var(--paper);text-align:center;border-bottom:none}
+#contact h2{color:var(--paper);margin:0 auto;max-width:20ch}
+#contact .kicker{color:var(--gold)}
+#contact .sub{margin:18px auto 0;color:#bdb6a4}
+.ctaform{margin:44px auto 0;max-width:520px;display:flex;gap:12px;flex-wrap:wrap}
+.ctaform input{
+  flex:1;min-width:220px;padding:16px 20px;border:2px solid var(--paper);
+  background:transparent;color:var(--paper);font-family:'Archivo';font-size:.95rem;border-radius:32px;
+}
+.ctaform input::placeholder{color:#8c8676}
+.ctaform button{
+  padding:16px 30px;border:2px solid var(--rust);background:var(--rust);color:var(--paper);
+  font-family:'Archivo';font-weight:600;font-size:.95rem;border-radius:32px;cursor:pointer;
+}
+.ctaform button:hover{background:var(--rust-deep);border-color:var(--rust-deep)}
+.formnote{margin-top:16px;font-size:.8rem;color:#8c8676}
+
+/* FOOTER */
+footer{background:var(--ink);color:#8c8676;padding:34px 0;text-align:center;font-size:.82rem}
+footer .brand{color:var(--paper);justify-content:center;margin-bottom:10px;font-size:1.2rem}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span>Vakwerk</div>
+    <div class="navlinks">
+      <a href="#probleem">Probleem</a>
+      <a href="#producten">Producten</a>
+      <a href="#aanpak">Aanpak</a>
+      <a href="#team">Team</a>
+      <a href="#contact" class="navcta">Plan een gesprek</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <div class="tagline mono reveal">AI-infrastructuur, geen adviesrapporten</div>
+    <h1 class="reveal">Werkende AI voor bedrijven die <em>kennis</em> verkopen.</h1>
+    <p class="lead reveal">Vakwerk bouwt draaiende AI-systemen voor de bouwsector en kennisintensieve organisaties. Geen PowerPoint, geen pilots zonder einde. Een systeem dat vanaf dag één uren bespaart.</p>
+    <div class="herobtns reveal">
+      <a href="#contact" class="btn btn-primary">Plan een kennismaking</a>
+      <a href="#producten" class="btn btn-ghost">Bekijk de producten</a>
+    </div>
+    <div class="herostats reveal">
+      <div><div class="num">80%</div><div class="lbl">minder tijd op documentanalyse, gemeten in de praktijk</div></div>
+      <div><div class="num">3</div><div class="lbl">live use cases draaiend bij een bouwbedrijf</div></div>
+      <div><div class="num">4–6 wk</div><div class="lbl">van eerste gesprek tot een werkend systeem</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="probleem">
+  <div class="wrap">
+    <div class="kicker mono reveal">Het probleem</div>
+    <h2 class="reveal">Kennis is je grootste bezit. En je verliest er elke dag van.</h2>
+    <p class="sub reveal">Drie pijnpunten die we keer op keer tegenkomen bij bouwbedrijven en bureaus.</p>
+    <div class="probs">
+      <div class="prob reveal">
+        <div class="pn">01</div>
+        <h3>Kennis verdwijnt</h3>
+        <p>Als iemand vertrekt, loopt de expertise mee de deur uit. Rapporten, afspraken en methoden zitten verspreid over mail, Drive en hoofden van mensen.</p>
+      </div>
+      <div class="prob reveal">
+        <div class="pn">02</div>
+        <h3>Repetitief handwerk</h3>
+        <p>Dezelfde zoektocht, elke maand opnieuw. Documenten vergelijken, notulen uitwerken, offertes analyseren. Uren werk dat geen denkwerk vraagt.</p>
+      </div>
+      <div class="prob reveal">
+        <div class="pn">03</div>
+        <h3>AI zonder gids</h3>
+        <p>Iedereen weet dat AI iets kan, niemand weet hoe te beginnen. Generieke tools sluiten niet aan op je vakjargon, je documenten en je werkproces.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="producten">
+  <div class="wrap">
+    <div class="kicker mono reveal">Wat we leveren</div>
+    <h2 class="reveal">Drie producten. Vaste scope, vaste prijs, vaste levertijd.</h2>
+    <p class="sub reveal">Geen open einden. Je weet vooraf wat je krijgt en wanneer.</p>
+    <div class="cards">
+      <div class="card reveal">
+        <h3>Kennisbank Starter</h3>
+        <div class="desc">Je bestaande documenten doorzoekbaar gemaakt via een chat-interface die je vakjargon begrijpt.</div>
+        <ul>
+          <li>Documenten ingeladen en gestructureerd</li>
+          <li>Vraag-en-antwoord op je eigen kennis</li>
+          <li>Bronverwijzing bij elk antwoord</li>
+        </ul>
+        <div class="price">vanaf € 2.000<span>eenmalige setup</span></div>
+      </div>
+      <div class="card feat reveal">
+        <div class="tag">Meest gekozen</div>
+        <h3>Agentic OS Lite</h3>
+        <div class="desc">Kennisbank plus één automatisering plus een geheugenlaag die met je organisatie meegroeit.</div>
+        <ul>
+          <li>Volledige doorzoekbare kennisbank</li>
+          <li>Eén proces volledig geautomatiseerd</li>
+          <li>Geheugenlaag voor de hele organisatie</li>
+        </ul>
+        <div class="price">vanaf € 6.000<span>setup + € 300–600 / maand</span></div>
+      </div>
+      <div class="card reveal">
+        <h3>Proces-automatisering</h3>
+        <div class="desc">Eén repetitief werkproces volledig uit handen genomen, ingericht op jouw manier van werken.</div>
+        <ul>
+          <li>Notulen, offertevergelijking of contractanalyse</li>
+          <li>Ingericht op jouw documenten</li>
+          <li>Overdraagbaar naar je team</li>
+        </ul>
+        <div class="price">vanaf € 3.500<span>eenmalige setup</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="aanpak">
+  <div class="wrap">
+    <div class="kicker mono reveal">Onze aanpak</div>
+    <h2 class="reveal">Van eerste gesprek tot werkend systeem in vier stappen.</h2>
+    <p class="sub reveal">Een beproefde methodiek, getest in een echte bouworganisatie.</p>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="sn">1</div>
+        <h3>Verkennen</h3>
+        <p>We brengen één concreet proces in kaart en bepalen waar de meeste tijd verdwijnt.</p>
+      </div>
+      <div class="step reveal">
+        <div class="sn">2</div>
+        <h3>Bouwen</h3>
+        <p>We richten het systeem in op jouw documenten, termen en werkwijze. Geen standaardpakket.</p>
+      </div>
+      <div class="step reveal">
+        <div class="sn">3</div>
+        <h3>Testen</h3>
+        <p>Vier tot zes weken praktijktest met echte gebruikers. We meten de tijdwinst.</p>
+      </div>
+      <div class="step reveal">
+        <div class="sn">4</div>
+        <h3>Overdragen</h3>
+        <p>Je team werkt zelfstandig verder. Wij blijven beschikbaar voor onderhoud en uitbreiding.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="team">
+  <div class="wrap">
+    <div class="kicker mono reveal">Wie we zijn</div>
+    <h2 class="reveal">Twee oprichters. Vakkennis en zichtbaarheid.</h2>
+    <p class="sub reveal">De zeldzame combinatie: iemand die de bouw van binnen kent, en iemand die weet hoe je gevonden wordt.</p>
+    <div class="founders">
+      <div class="founder reveal">
+        <div class="av">M</div>
+        <h3>Max</h3>
+        <div class="role">AI-implementatie &amp; bouwdomein</div>
+        <p>Bouwkundige met praktijkervaring als werkvoorbereider en uitvoerder. Bouwde drie live AI-use-cases bij een bouwbedrijf en weet welke informatie er in een document echt toe doet.</p>
+      </div>
+      <div class="founder reveal">
+        <div class="av">D</div>
+        <h3>David</h3>
+        <div class="role">Vindbaarheid &amp; groei</div>
+        <p>Werkt in SEO en online vindbaarheid. Zorgt dat het werk van Vakwerk gezien wordt door de bedrijven die er baat bij hebben, en bouwt aan een betrouwbaar leadkanaal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="kicker mono reveal">Aan de slag</div>
+    <h2 class="reveal">Benieuwd wat AI voor jouw organisatie oplevert?</h2>
+    <p class="sub reveal">Laat je gegevens achter. We plannen een vrijblijvend gesprek van 30 minuten en bekijken samen één concreet proces.</p>
+    <div class="ctaform reveal">
+      <input type="email" id="email" placeholder="jouw@bedrijf.nl" aria-label="E-mailadres">
+      <button onclick="submitLead()">Plan een gesprek</button>
+    </div>
+    <div class="formnote" id="note">Geen verplichtingen. We reageren binnen één werkdag.</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span>Vakwerk</div>
+    <div>Werkende AI-infrastructuur voor de bouw &amp; kennisintensieve organisaties</div>
+    <div style="margin-top:8px">© 2026 Vakwerk — opgericht door Max &amp; David</div>
+  </div>
+</footer>
+
+<script>
+// staggered reveal on scroll
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'),i*80);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// hero reveal on load
+window.addEventListener('load',()=>{
+  document.querySelectorAll('header .reveal').forEach((el,i)=>{
+    setTimeout(()=>el.classList.add('in'),120+i*130);
+  });
+});
+
+// lead form (demo)
+function submitLead(){
+  const v=document.getElementById('email').value.trim();
+  const note=document.getElementById('note');
+  if(v && v.includes('@')){
+    note.textContent='Bedankt. We nemen binnen één werkdag contact met je op.';
+    note.style.color='#d9a441';
+    document.getElementById('email').value='';
+  }else{
+    note.textContent='Vul een geldig e-mailadres in om verder te gaan.';
+    note.style.color='#c4502a';
+  }
+}
+</script>
+</body>
+</html>
